@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dapper;
+using System.Transactions;
 using Microsoft.Extensions.Configuration;
 using StudentManagement.Domain.Models;
+using System.ComponentModel.Design;
+using Microsoft.Data.SqlClient;
+using static System.Formats.Asn1.AsnWriter;
 
 
 
@@ -25,12 +31,32 @@ namespace StudentManagement.Infastructure.Repositories
             Student response = new Student();
             try
             {
+                using (IDbConnection conn = new SqlConnection(_configuration.GetConnectionString("StudentDB")))
+                {
+                    DynamicParameters Params = new();
+                    Params.Add("@ID", id, DbType.Int32, ParameterDirection.Input);
+                    var student = conn.Query<Student>("Select " +
+                        "[ID]," +
+                        "[FirstName]," +
+                        "[LastName]," +
+                        "[DOB]," +
+                        "[Email]," +
+                        "[PhoneNumber]," +
+                        "[EnrollmentDate]," +
+                        "[Status]," +
+                        "[CreatedDate]," +
+                        "[ModifiedDate]" +
+                        " FROM [Student] WHERE ID=@ID", Params, commandType: CommandType.Text);
+
+                    response = student.FirstOrDefault();
+
+                }
 
 
                 response.IsSuccess = true;
                 response.ErrorMessage = "Success";
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 response.IsSuccess = false;
                 response.ErrorMessage = "Error while getting student data";
@@ -41,12 +67,74 @@ namespace StudentManagement.Infastructure.Repositories
 
         public List<Student> GetStudents()
         {
-            return new List<Student>();
+            List<Student> response = new List<Student>();
+            try
+            {
+                using (IDbConnection conn = new SqlConnection(_configuration.GetConnectionString("StudentDB")))
+                {
+                    DynamicParameters Params = new();
+
+                    var student = conn.Query<Student>("Select " +
+                        "[ID]," +
+                        "[FirstName]," +
+                        "[LastName]," +
+                        "[DOB]," +
+                        "[Email]," +
+                        "[PhoneNumber]," +
+                        "[EnrollmentDate]," +
+                        "[Status]," +
+                        "[CreatedDate]," +
+                        "[ModifiedDate]" +
+                        " FROM [Student] ", Params, commandType: CommandType.Text);
+
+                    response = student.ToList();
+
+                }
+
+            }
+            catch (Exception )
+            {
+                throw;
+            }
+
+            return response;
         }
 
-        public Student GetStudentByName(string name)
+        public List<Student> GetStudentByFirstName(string name)
         {
-            return new Student();
+            List<Student> response = new List<Student>();
+            try
+            {
+                using (IDbConnection conn = new SqlConnection(_configuration.GetConnectionString("StudentDB")))
+                {
+                    DynamicParameters Params = new();
+                    Params.Add("@FirstName", name, DbType.String, ParameterDirection.Input);
+                    var student = conn.Query<Student>("Select " +
+                        "[ID]," +
+                        "[FirstName]," +
+                        "[LastName]," +
+                        "[DOB]," +
+                        "[Email]," +
+                        "[PhoneNumber]," +
+                        "[EnrollmentDate]," +
+                        "[Status]," +
+                        "[CreatedDate]," +
+                        "[ModifiedDate]" +
+                        " FROM [Student] WHERE FirstName=@FirstName", Params, commandType: CommandType.Text);
+
+                    response = student.ToList();
+
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+            return response;
         }
         public Student UpdateStudent(Student student)
         {

@@ -12,7 +12,7 @@ namespace StudentManagement.Infastructure.Repositories
 
         public Student GetStudentById(int id);
         public List<Student> GetStudents();
-        public Student GetStudentByName(string name);
+        public List<Student> GetStudentByFirstName(string name);
         public Student UpdateStudent(Student student);
         public Student DeleteStudentById(int id);
 
